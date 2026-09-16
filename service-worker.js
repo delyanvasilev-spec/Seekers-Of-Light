@@ -1,9 +1,10 @@
-const CACHE_NAME = 'seekers-sheet-v2.16';
+const CACHE_NAME = 'seekers-sheet-v2.17';
 
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
+  './fontawesome.min.css',
   './icon-192.png',
   './icon-512.png'
 ];

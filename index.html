@@ -2,15 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>The Seekers of Light • Interactive Character Sheet v2.16</title>
+    <title>The Seekers of Light • Interactive Character Sheet v2.17</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e2937">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="fontawesome.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
         
@@ -308,7 +309,7 @@
                 </div>
                 <div class="min-w-0">
                     <h1 class="header-font text-xl sm:text-3xl font-semibold tracking-tighter text-slate-800 truncate">The Seekers of Light</h1>
-                    <p class="text-[9px] sm:text-[10px] text-slate-500 -mt-0.5">ALPHA CHARACTER SHEET v2.16 • INTERACTIVE</p>
+                    <p class="text-[9px] sm:text-[10px] text-slate-500 -mt-0.5">ALPHA CHARACTER SHEET v2.17 • INTERACTIVE</p>
                 </div>
             </div>
             
@@ -944,7 +945,7 @@
     </div>
 
     <div class="max-w-[1100px] mx-auto px-3 sm:px-4 mt-3 sm:mt-4 text-center text-[10px] text-slate-400 no-print pb-6">
-        Auto-saves to this browser. Works offline. Optimized for phone + desktop. • v2.16
+        Auto-saves to this browser. Works offline. Optimized for phone + desktop. • v2.17
     </div>
 
     <script>
@@ -1442,7 +1443,7 @@
                 data[el.id] = (el.type === 'checkbox') ? el.checked : el.value;
             });
             try {
-                localStorage.setItem('seekers_char_sheet_v2.16', JSON.stringify(data));
+                localStorage.setItem('seekers_char_sheet_v2.17', JSON.stringify(data));
             } catch (e) {
                 console.error('Autosave failed - browser storage may be full or unavailable.', e);
                 if (!saveFailureWarned) {
@@ -1461,7 +1462,8 @@
         }
         
         function loadFromLocalStorage() {
-            let saved = localStorage.getItem('seekers_char_sheet_v2.16')
+            let saved = localStorage.getItem('seekers_char_sheet_v2.17')
+                     || localStorage.getItem('seekers_char_sheet_v2.16')
                      || localStorage.getItem('seekers_char_sheet_v2.15')
                      || localStorage.getItem('seekers_char_sheet_v2.14')
                      || localStorage.getItem('seekers_char_sheet_v2.13')
@@ -1501,7 +1503,7 @@
         }
         
         function loadCharacter() {
-            const saved = localStorage.getItem('seekers_char_sheet_v2.16') || localStorage.getItem('seekers_char_sheet_v2.15') || localStorage.getItem('seekers_char_sheet_v2.14') || localStorage.getItem('seekers_char_sheet_v2.13') || localStorage.getItem('seekers_char_sheet_v2.12') || localStorage.getItem('seekers_char_sheet_v2.11');
+            const saved = localStorage.getItem('seekers_char_sheet_v2.17') || localStorage.getItem('seekers_char_sheet_v2.16') || localStorage.getItem('seekers_char_sheet_v2.15') || localStorage.getItem('seekers_char_sheet_v2.14') || localStorage.getItem('seekers_char_sheet_v2.13') || localStorage.getItem('seekers_char_sheet_v2.12') || localStorage.getItem('seekers_char_sheet_v2.11');
             if (!saved) { alert('No saved character found in this browser.'); return; }
             loadFromLocalStorage();
             const toast = document.createElement('div');
@@ -1513,7 +1515,7 @@
         
         function exportJSON() {
             saveToLocalStorage();
-            const data = localStorage.getItem('seekers_char_sheet_v2.16');
+            const data = localStorage.getItem('seekers_char_sheet_v2.17');
             if (!data) { alert('No character data to export yet.'); return; }
             const charName = document.getElementById('char-name').value || 'character';
             const filename = `${charName.toLowerCase().replace(/\s+/g, '-')}-sheet.json`;
@@ -1535,7 +1537,7 @@
                 reader.onload = function(ev) {
                     try {
                         const importedData = JSON.parse(ev.target.result);
-                        localStorage.setItem('seekers_char_sheet_v2.16', JSON.stringify(importedData));
+                        localStorage.setItem('seekers_char_sheet_v2.17', JSON.stringify(importedData));
                         loadFromLocalStorage();
                         alert('Character imported successfully!');
                     } catch (err) {
@@ -1549,6 +1551,7 @@
         
         function resetCharacter() {
             if (!confirm('Reset all fields? This will clear the current character data.')) return;
+            localStorage.removeItem('seekers_char_sheet_v2.17');
             localStorage.removeItem('seekers_char_sheet_v2.16');
             localStorage.removeItem('seekers_char_sheet_v2.15');
             localStorage.removeItem('seekers_char_sheet_v2.14');
@@ -1597,7 +1600,7 @@
                 }
             });
             
-            console.log('%c[SeekerSheet] v2.16 mobile-optimized initialized (crafts add/delete, debounced autosave).', 'color:#64748b');
+            console.log('%c[SeekerSheet] v2.17 mobile-optimized initialized (self-hosted Font Awesome, CSP hardening).', 'color:#64748b');
         }
         
         window.onload = initializeCharacterSheet;
