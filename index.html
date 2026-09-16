@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>The Seekers of Light • Interactive Character Sheet v2.16</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e2937">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+        
+        :root {
+            --primary: #1e2937;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .header-font {
+            font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .sheet-container {
+            box-shadow: 0 10px 30px -15px rgb(15 23 42 / 0.15), 
+                       0 4px 6px -4px rgb(15 23 42 / 0.1);
+            border: 1px solid #64748b30;
+        }
+
+        .section-box {
+            border: 2px solid #475569;
+            border-radius: 1.25rem;
+            background-color: white;
+            box-shadow: 0 1px 3px rgb(15 23 42 / 0.05);
+        }
+
+        .section-header {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #334155;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid #64748b30;
+        }
+
+        .ability-input {
+            width: 3.1rem;
+            height: 3.1rem;
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-align: center;
+            border: 3px solid #1e2937;
+            border-radius: 9999px;
+            background: #f8fafc;
+            transition: all 0.1s ease;
+            -moz-appearance: textfield;
+        }
+        
+        .ability-input::-webkit-outer-spin-button,
+        .ability-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .ability-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgb(148 163 184 / 0.3);
+            background: white;
+        }
+
+        .field-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .rpg-table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 480px; /* forces scroll on narrow screens instead of crushing */
+        }
+        
+        .rpg-table th {
+            background-color: #f1e7d2;
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #334155;
+            padding: 8px 6px;
+            border: 1px solid #64748b;
+            text-align: left;
+            white-space: nowrap;
+        }
+        
+        .rpg-table td {
+            padding: 6px 4px;
+            border: 1px solid #64748b;
+            vertical-align: middle;
+        }
+        
+        .rpg-table input, .rpg-table textarea {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 0.9375rem; /* ~15px, closer to 16 to reduce zoom risk */
+            padding: 6px 4px;
+            min-height: 36px;
+        }
+        
+        .rpg-table input:focus, .rpg-table textarea:focus {
+            outline: 1.5px solid #64748b;
+            background: #fefce8;
+        }
+
+        .condition-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.1s;
+            min-height: 40px;
+        }
+        
+        .condition-item:hover, .condition-item:active {
+            background-color: #f1f5f9;
+        }
+
+        .spell-card {
+            border: 1.5px solid #64748b;
+            border-radius: 1rem;
+            padding: 0.75rem;
+            background: white;
+        }
+
+        .nav-tab {
+            padding: 0.55rem 0.9rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 9999px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .nav-tab.active {
+            background-color: #1e2937;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(15 23 42 / 0.2);
+        }
+
+        .nav-tab:not(.active) {
+            background-color: #f1e7d2;
+            color: #334155;
+        }
+        
+        .nav-tab:not(.active):active {
+            background-color: #e2d5b8;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .form-input {
+            border: 1.5px solid #64748b;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.6rem;
+            font-size: 1rem; /* 16px — critical: prevents iOS auto-zoom on focus */
+            width: 100%;
+            min-height: 42px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #1e2937;
+            box-shadow: 0 0 0 3px rgb(148 163 184 / 0.15);
+        }
+
+        .mini-input {
+            border: 1.5px solid #64748b;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            padding: 6px 4px;
+            text-align: center;
+            min-height: 36px;
+            min-width: 2.75rem;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .rpg-input {
+            background: #fefce8;
+            border: 1px solid #854d0e30;
+        }
+        
+        .ability-detail-card {
+            border: 1.5px solid #64748b;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            background: #fafaf9;
+        }
+
+        /* Horizontal scroll wrapper for tables */
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-left: -0.25rem;
+            margin-right: -0.25rem;
+            padding-bottom: 4px;
+        }
+
+        /* Scrollable tab bar on small screens */
+        .tab-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .tab-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Action buttons — compact on mobile */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            min-height: 40px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 9999px;
+            transition: background-color 0.15s;
+            padding: 0.4rem 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+            .ability-input {
+                width: 3.25rem;
+                height: 3.25rem;
+                font-size: 1.75rem;
+            }
+            .nav-tab {
+                padding: 0.5rem 1.15rem;
+                font-size: 0.875rem;
+            }
+            .action-btn {
+                font-size: 0.875rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .sheet-container {
+                box-shadow: none;
+                border: 2px solid #475569;
+            }
+            .section-box {
+                box-shadow: none;
+                border: 2px solid #475569;
+            }
+            body {
+                background: white;
+            }
+            .tab-content {
+                display: block !important;
+            }
+            .table-scroll {
+                overflow: visible;
+            }
+            .rpg-table {
+                min-width: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 py-3 sm:py-6 md:py-8">
+    <!-- Top Navigation -->
+    <div class="max-w-[1100px] mx-auto px-3 sm:px-4 mb-3 sm:mb-5 no-print">
+        <div class="flex items-center justify-between flex-wrap gap-2 sm:gap-3">
+            <div class="flex items-center gap-x-2 sm:gap-x-3 min-w-0">
+                <div class="w-9 h-9 sm:w-11 sm:h-11 bg-slate-800 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-inner shrink-0">
+                    <i class="fa-solid fa-sun text-amber-300 text-xl sm:text-3xl"></i>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="header-font text-xl sm:text-3xl font-semibold tracking-tighter text-slate-800 truncate">The Seekers of Light</h1>
+                    <p class="text-[9px] sm:text-[10px] text-slate-500 -mt-0.5">ALPHA CHARACTER SHEET v2.16 • INTERACTIVE</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <button onclick="saveCharacter()" class="action-btn bg-white hover:bg-slate-50 border border-slate-300 text-slate-700">
+                    <i class="fa-solid fa-save"></i>
+                    <span class="hidden xs:inline sm:inline">Save</span>
+                </button>
+                <button onclick="loadCharacter()" class="action-btn bg-white hover:bg-slate-50 border border-slate-300 text-slate-700">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span class="hidden sm:inline">Load</span>
+                </button>
+                <button onclick="exportJSON()" class="action-btn bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <i class="fa-solid fa-download"></i>
+                    <span class="hidden sm:inline">Export</span>
+                </button>
+                <button onclick="importJSON()" class="action-btn bg-white hover:bg-slate-50 border border-slate-300 text-slate-700">
+                    <i class="fa-solid fa-upload"></i>
+                    <span class="hidden sm:inline">Import</span>
+                </button>
+                <button onclick="window.print()" class="action-btn bg-slate-800 hover:bg-slate-900 text-white">
+                    <i class="fa-solid fa-print"></i>
+                    <span class="hidden sm:inline">Print</span>
+                </button>
+                <button onclick="resetCharacter()" class="action-btn text-red-600 hover:bg-red-50 border border-red-200 px-3">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation — horizontally scrollable on mobile -->
+    <div class="max-w-[1100px] mx-auto px-3 sm:px-4 mb-3 sm:mb-4 no-print">
+        <div class="tab-scroll flex gap-1.5 sm:gap-2 pb-1">
+            <button onclick="showTab('main')" id="tab-btn-main"
+                    class="nav-tab active">
+                <i class="fa-solid fa-user mr-1.5"></i>
+                <span>Character</span>
+            </button>
+            <button onclick="showTab('equip')" id="tab-btn-equip"
+                    class="nav-tab">
+                <i class="fa-solid fa-backpack mr-1.5"></i>
+                <span>Equipment</span>
+            </button>
+            <button onclick="showTab('maneuvers')" id="tab-btn-maneuvers"
+                    class="nav-tab">
+                <i class="fa-solid fa-swords mr-1.5"></i>
+                <span>Maneuvers</span>
+            </button>
+            <button onclick="showTab('spells')" id="tab-btn-spells"
+                    class="nav-tab">
+                <i class="fa-solid fa-magic mr-1.5"></i>
+                <span>Spells</span>
+            </button>
+            <button onclick="showTab('abilities')" id="tab-btn-abilities"
+                    class="nav-tab">
+                <i class="fa-solid fa-star mr-1.5"></i>
+                <span>Abilities</span>
+            </button>
+            <button onclick="showTab('notes')" id="tab-btn-notes"
+                    class="nav-tab">
+                <i class="fa-solid fa-note-sticky mr-1.5"></i>
+                <span>Notes</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== TAB: MAIN CHARACTER SHEET ==================== -->
+    <div id="tab-main" class="tab-content max-w-[1100px] mx-auto px-3 sm:px-4">
+        <div class="sheet-container bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-slate-300">
+            
+            <!-- Header -->
+            <div class="flex flex-col gap-3 mb-4">
+                <!-- Character / Player / Campaign -->
+                <div class="section-box p-3 sm:p-4">
+                    <div class="flex flex-col sm:flex-row sm:items-start gap-3">
+                        <div class="shrink-0">
+                            <div class="text-amber-600 font-bold tracking-[2px] text-xs">THE SEEKERS OF LIGHT</div>
+                            <div class="text-[10px] text-slate-500">Campaign Setting</div>
+                        </div>
+                        <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                            <div>
+                                <span class="field-label block mb-0.5">Character</span>
+                                <input id="char-name" type="text" class="form-input font-semibold" placeholder="Character name" autocomplete="off">
+                            </div>
+                            <div>
+                                <span class="field-label block mb-0.5">Player</span>
+                                <input id="player-name" type="text" class="form-input" placeholder="Your name" autocomplete="off">
+                            </div>
+                            <div>
+                                <span class="field-label block mb-0.5">Campaign</span>
+                                <input id="campaign" type="text" class="form-input" placeholder="Campaign name" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ancestry etc. -->
+                <div class="section-box p-3 sm:p-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                        <div>
+                            <span class="field-label block mb-0.5">Ancestry</span>
+                            <input id="ancestry" type="text" class="form-input" placeholder="Human, Elf..." autocomplete="off">
+                        </div>
+                        <div>
+                            <span class="field-label block mb-0.5">Age</span>
+                            <input id="age" type="text" class="form-input" placeholder="27" inputmode="numeric">
+                        </div>
+                        <div>
+                            <span class="field-label block mb-0.5">Gender</span>
+                            <input id="gender" type="text" class="form-input" placeholder="—" autocomplete="off">
+                        </div>
+                        <div>
+                            <span class="field-label block mb-0.5">Details</span>
+                            <input id="details" type="text" class="form-input" placeholder="Height, weight, eyes..." autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+                
+                <!-- LEFT COLUMN -->
+                <div class="lg:col-span-5 space-y-3 sm:space-y-4">
+                    
+                    <!-- Ability Scores -->
+                    <div class="section-box p-3 sm:p-4">
+                        <div class="section-header">Ability Scores</div>
+                        <div class="grid grid-cols-4 gap-x-2 gap-y-3 sm:gap-x-3 sm:gap-y-4">
+                            <div class="flex flex-col items-center">
+                                <div class="stat-label mb-0.5">STR</div>
+                                <input id="str" type="number" class="ability-input" value="" inputmode="numeric">
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="stat-label mb-0.5">AGI</div>
+                                <input id="agi" type="number" class="ability-input" value="" inputmode="numeric">
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="stat-label mb-0.5">END</div>
+                                <input id="end" type="number" class="ability-input" value="" inputmode="numeric">
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="stat-label mb-0.5">SEN</div>
+                                <input id="sen" type="number" class="ability-input" value="" inputmode="numeric">
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="stat-label mb-0.5">ACU</div>
+                                <input id="acu" type="number" class="ability-input" value="" inputmode="numeric">
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="stat-label mb-0.5">INF</div>
+                                <input id="inf" type="number" class="ability-input" value="" inputmode="numeric">
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="stat-label mb-0.5">POW</div>
+                                <input id="pow" type="number" class="ability-input" value="" inputmode="numeric">
+                            </div>
+                            <div class="col-span-1"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Health Points -->
+                    <div class="section-box p-3 sm:p-4">
+                        <div class="section-header">Health Points</div>
+                        <div class="grid grid-cols-3 gap-2 sm:gap-3">
+                            <div>
+                                <div class="field-label">HP Max</div>
+                                <input id="hp-max" type="number" class="form-input text-center text-lg sm:text-xl font-bold" placeholder="—" inputmode="numeric">
+                            </div>
+                            <div>
+                                <div class="field-label">WT (½ HP)</div>
+                                <input id="wt" type="number" class="form-input text-center text-lg sm:text-xl font-bold" placeholder="—" inputmode="numeric">
+                            </div>
+                            <div>
+                                <div class="field-label">Current HP</div>
+                                <input id="hp" type="number" class="form-input text-center text-xl sm:text-2xl font-bold text-emerald-700" placeholder="—" inputmode="numeric">
+                            </div>
+                        </div>
+                        <div class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <label class="flex items-center gap-x-2 cursor-pointer min-h-[40px]">
+                                <input id="seriously-wounded" type="checkbox" class="w-5 h-5 accent-red-600">
+                                <span class="text-sm font-semibold">Seriously Wounded</span>
+                            </label>
+                            <span class="text-[10px] text-red-600">(-1 to defenses & resists)</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Resists -->
+                    <div class="section-box p-3 sm:p-4">
+                        <div class="section-header">Resists</div>
+                        <div class="space-y-2.5 text-sm">
+                            <div class="grid grid-cols-5 gap-x-2 items-center">
+                                <div class="col-span-2">
+                                    <span class="font-semibold">Fortitude</span>
+                                    <div class="text-[9px] text-slate-500">END + Might</div>
+                                </div>
+                                <input id="fortitude" type="text" class="col-span-3 form-input text-center font-mono" placeholder="—" inputmode="numeric">
+                            </div>
+                            <div class="grid grid-cols-5 gap-x-2 items-center">
+                                <div class="col-span-2">
+                                    <span class="font-semibold">Reflexes</span>
+                                    <div class="text-[9px] text-slate-500">AGI + Evasion</div>
+                                </div>
+                                <input id="reflexes" type="text" class="col-span-3 form-input text-center font-mono" placeholder="—" inputmode="numeric">
+                            </div>
+                            <div class="grid grid-cols-5 gap-x-2 items-center">
+                                <div class="col-span-2">
+                                    <span class="font-semibold">Balance</span>
+                                    <div class="text-[9px] text-slate-500">STR/AGI + Coord.</div>
+                                </div>
+                                <input id="balance" type="text" class="col-span-3 form-input text-center font-mono" placeholder="—" inputmode="numeric">
+                            </div>
+                            <div class="grid grid-cols-5 gap-x-2 items-center">
+                                <div class="col-span-2">
+                                    <span class="font-semibold">Mental</span>
+                                    <div class="text-[9px] text-slate-500">INF/ACU + Insight</div>
+                                </div>
+                                <input id="mental" type="text" class="col-span-3 form-input text-center font-mono" placeholder="—" inputmode="numeric">
+                            </div>
+                            <div class="grid grid-cols-5 gap-x-2 items-center">
+                                <div class="col-span-2">
+                                    <span class="font-semibold">Resolve</span>
+                                    <div class="text-[9px] text-slate-500">INF + Survival</div>
+                                </div>
+                                <input id="resolve" type="text" class="col-span-3 form-input text-center font-mono" placeholder="—" inputmode="numeric">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Awareness + Movement -->
+                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                        <div class="section-box p-3">
+                            <div class="section-header">Awareness</div>
+                            <div class="text-xs text-slate-500">SEN + Perception</div>
+                            <input id="awareness" type="text" class="form-input mt-1 text-center" placeholder="—" inputmode="numeric">
+                            <div class="mt-2">
+                                <div class="text-xs font-semibold">Initiative</div>
+                                <input id="initiative" type="text" class="form-input text-center" placeholder="—" inputmode="numeric">
+                            </div>
+                        </div>
+                        <div class="section-box p-3">
+                            <div class="section-header">Movement</div>
+                            <div class="field-label">Speed / Sprint</div>
+                            <input id="speed" type="text" class="form-input text-center text-base sm:text-lg" placeholder="30 / 60 ft">
+                        </div>
+                    </div>
+                    
+                    <!-- Fortune's Favor -->
+                    <div class="section-box p-3 sm:p-4">
+                        <div class="section-header">Fortune's Favor</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div>
+                                <div class="field-label mb-1">Charges (3 max)</div>
+                                <div class="flex gap-3">
+                                    <label class="flex items-center justify-center min-h-[44px] min-w-[44px]"><input id="fortune-charge-1" type="checkbox" class="w-6 h-6 accent-amber-500"></label>
+                                    <label class="flex items-center justify-center min-h-[44px] min-w-[44px]"><input id="fortune-charge-2" type="checkbox" class="w-6 h-6 accent-amber-500"></label>
+                                    <label class="flex items-center justify-center min-h-[44px] min-w-[44px]"><input id="fortune-charge-3" type="checkbox" class="w-6 h-6 accent-amber-500"></label>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="field-label mb-1">Benefits</div>
+                                <textarea id="fortune-benefits" rows="2" class="form-input text-sm" placeholder="List current benefits..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- RIGHT COLUMN -->
+                <div class="lg:col-span-7 space-y-3 sm:space-y-4">
+                    
+                    <!-- Skills + Protection -->
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-3 sm:gap-4">
+                        
+                        <!-- Skills and Crafts -->
+                        <div class="section-box p-3 md:col-span-3">
+                            <div class="section-header">Skills and Crafts</div>
+                            <div class="mb-2">
+                                <div class="grid grid-cols-12 text-xs font-bold px-1 mb-1">
+                                    <div class="col-span-5">Skill</div>
+                                    <div class="col-span-3 text-center">Rank</div>
+                                    <div class="col-span-3 text-center">XP</div>
+                                    <div class="col-span-1"></div>
+                                </div>
+                                <div id="skills-list"></div>
+                                <button onclick="addSkillRow()" class="mt-1 text-xs flex items-center gap-x-1 text-slate-500 active:text-slate-800 min-h-[36px]">
+                                    <i class="fa-solid fa-plus"></i> <span>Add skill</span>
+                                </button>
+                            </div>
+                            <div class="mt-3 pt-3 border-t">
+                                <div class="text-xs font-bold mb-1">Crafts</div>
+                                <div class="grid grid-cols-12 text-xs font-bold px-1 mb-1">
+                                    <div class="col-span-5">Craft</div>
+                                    <div class="col-span-3 text-center">Rank</div>
+                                    <div class="col-span-3 text-center">XP</div>
+                                    <div class="col-span-1"></div>
+                                </div>
+                                <div id="crafts-list"></div>
+                                <button onclick="addCraftRow()" class="mt-1 text-xs flex items-center gap-x-1 text-slate-500 active:text-slate-800 min-h-[36px]">
+                                    <i class="fa-solid fa-plus"></i> <span>Add craft</span>
+                                </button>
+                            </div>
+                            <div class="mt-3 text-[9px] bg-slate-50 p-2 rounded-lg text-slate-500 leading-tight">
+                                <strong>Checks:</strong> Untrained −2 · Trained 0 · Exp +1 · Expert +2 · Adept +3 · Master +4
+                            </div>
+                        </div>
+                        
+                        <!-- Protection -->
+                        <div class="section-box p-3 md:col-span-2">
+                            <div class="section-header">Protection</div>
+                            <div class="space-y-2 text-sm">
+                                <div>
+                                    <span class="field-label">Armor Name</span>
+                                    <input id="armor-name" type="text" class="form-input" autocomplete="off">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <span class="field-label">Type</span>
+                                        <input id="armor-type" type="text" class="form-input" autocomplete="off">
+                                    </div>
+                                    <div>
+                                        <span class="field-label">Value (1–10)</span>
+                                        <input id="armor-value" type="number" class="form-input" min="1" max="10" inputmode="numeric">
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="field-label">Traits</span>
+                                    <input id="armor-traits" type="text" class="form-input" autocomplete="off">
+                                </div>
+                                <div>
+                                    <span class="field-label">Mental Armor</span>
+                                    <input id="mental-armor" type="text" class="form-input" autocomplete="off">
+                                </div>
+                                <div class="pt-2 mt-1 border-t border-slate-200">
+                                    <div class="font-semibold text-xs mb-1.5 text-slate-600">Shield</div>
+                                    <div class="grid grid-cols-2 gap-2 mb-1.5">
+                                        <div>
+                                            <span class="field-label">Type</span>
+                                            <input id="shield-type" type="text" class="form-input" autocomplete="off">
+                                        </div>
+                                        <div>
+                                            <span class="field-label">Material</span>
+                                            <input id="shield-material" type="text" class="form-input" autocomplete="off">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="field-label">Traits</span>
+                                        <input id="shield-traits" type="text" class="form-input" autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Defenses -->
+                    <div class="section-box p-3 sm:p-4">
+                        <div class="section-header">Defenses</div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-sm">
+                            <div>
+                                <div class="font-semibold">Dodge</div>
+                                <div class="text-[10px] text-slate-500">AGI + Evasion</div>
+                                <input id="dodge" type="text" class="form-input mt-0.5 text-center" placeholder="—" inputmode="numeric">
+                            </div>
+                            <div>
+                                <div class="font-semibold">Parry</div>
+                                <div class="text-[10px] text-slate-500">AGI + Close combat</div>
+                                <input id="parry" type="text" class="form-input mt-0.5 text-center" placeholder="—" inputmode="numeric">
+                            </div>
+                            <div>
+                                <div class="font-semibold">Skirmish</div>
+                                <div class="text-[10px] text-slate-500">AGI+Coord / STR+Might</div>
+                                <input id="skirmish-def" type="text" class="form-input mt-0.5 text-center" placeholder="—" inputmode="numeric">
+                            </div>
+                            <div>
+                                <div class="font-semibold">Reactions</div>
+                                <div class="text-[10px] text-slate-500">1 + 1/2 Coord ranks</div>
+                                <input id="reactions" type="text" class="form-input mt-0.5 text-center" placeholder="—" inputmode="numeric">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Conditions -->
+                    <div class="section-box p-3 sm:p-4">
+                        <div class="section-header flex items-center justify-between">
+                            <span>Conditions</span>
+                            <span class="text-[10px] text-red-500 font-normal">Tap to toggle</span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-1 gap-y-0.5 text-sm">
+                            <label class="condition-item"><input type="checkbox" id="cond-intoxicated" class="w-4 h-4 accent-red-600 shrink-0"> <span>Intoxicated</span></label>
+                            <label class="condition-item"><input type="checkbox" id="cond-nausea" class="w-4 h-4 accent-red-600 shrink-0"> <span>Nausea</span></label>
+                            <label class="condition-item"><input type="checkbox" id="cond-staggered" class="w-4 h-4 accent-red-600 shrink-0"> <span>Staggered</span></label>
+                            <label class="condition-item"><input type="checkbox" id="cond-blinded" class="w-4 h-4 accent-red-600 shrink-0"> <span>Blinded</span></label>
+                            <label class="condition-item"><input type="checkbox" id="cond-onfire" class="w-4 h-4 accent-red-600 shrink-0"> <span>On fire</span></label>
+                            <label class="condition-item"><input type="checkbox" id="cond-scattered" class="w-4 h-4 accent-red-600 shrink-0"> <span>Scattered</span></label>
+                            <label class="condition-item"><input type="checkbox" id="cond-dazed" class="w-4 h-4 accent-red-600 shrink-0"> <span>Dazed</span></label>
+                            <label class="condition-item"><input type="checkbox" id="cond-stunned" class="w-4 h-4 accent-red-600 shrink-0"> <span>Stunned</span></label>
+                            <label class="condition-item"><input type="checkbox" id="cond-winded" class="w-4 h-4 accent-red-600 shrink-0"> <span>Winded</span></label>
+                            <label class="condition-item"><input type="checkbox" id="cond-exhausted" class="w-4 h-4 accent-red-600 shrink-0"> <span>Exhausted</span></label>
+                        </div>
+                    </div>
+                    
+                    <!-- Attacks -->
+                    <div class="section-box p-3">
+                        <div class="section-header">Attacks</div>
+                        <div class="table-scroll">
+                            <table class="rpg-table text-xs">
+                                <thead>
+                                    <tr>
+                                        <th class="w-[26%]">Weapon / Spell</th>
+                                        <th class="w-[13%]">Attack</th>
+                                        <th class="w-[13%]">Damage</th>
+                                        <th class="w-[10%]">Size</th>
+                                        <th class="w-[30%]">Traits & notes</th>
+                                        <th class="w-[8%]"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attacks-table-body"></tbody>
+                            </table>
+                        </div>
+                        <button onclick="addAttackRow()" class="mt-2 text-xs flex items-center gap-x-1 text-slate-500 active:text-slate-800 min-h-[36px]">
+                            <i class="fa-solid fa-plus"></i> <span>Add row</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Experience -->
+                    <div class="section-box p-3">
+                        <div class="section-header">Experience Points</div>
+                        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                            <div>
+                                <div class="text-xs font-semibold mb-1">XP</div>
+                                <div class="flex gap-2 items-center">
+                                    <div class="flex-1">
+                                        <div class="text-[10px] text-slate-500">Current</div>
+                                        <input id="xp-current" type="number" class="form-input text-center text-lg sm:text-xl font-bold" placeholder="0" inputmode="numeric">
+                                    </div>
+                                    <div class="text-xl text-slate-300 pt-4">/</div>
+                                    <div class="flex-1">
+                                        <div class="text-[10px] text-slate-500">Total</div>
+                                        <input id="xp-total" type="number" class="form-input text-center text-lg sm:text-xl font-bold" placeholder="0" inputmode="numeric">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold mb-1">Craft</div>
+                                <div class="flex gap-2 items-center">
+                                    <div class="flex-1">
+                                        <div class="text-[10px] text-slate-500">Current</div>
+                                        <input id="craft-current" type="number" class="form-input text-center text-lg sm:text-xl font-bold" placeholder="0" inputmode="numeric">
+                                    </div>
+                                    <div class="text-xl text-slate-300 pt-4">/</div>
+                                    <div class="flex-1">
+                                        <div class="text-[10px] text-slate-500">Total</div>
+                                        <input id="craft-total" type="number" class="form-input text-center text-lg sm:text-xl font-bold" placeholder="0" inputmode="numeric">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB: EQUIPMENT ==================== -->
+    <div id="tab-equip" class="tab-content max-w-[1100px] mx-auto px-3 sm:px-4 hidden">
+        <div class="sheet-container bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-slate-300">
+            <div class="space-y-4 sm:space-y-5">
+                <div class="section-box p-3 sm:p-4">
+                    <div class="section-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <span>Equipment and Items</span>
+                        <div class="flex items-center gap-x-4 text-xs">
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-semibold">Total WU:</span>
+                                <input id="total-wu" type="number" class="mini-input w-14" placeholder="0" inputmode="numeric">
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-semibold">Max WU:</span>
+                                <input id="max-wu" type="number" class="mini-input w-14" placeholder="—" inputmode="numeric">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-scroll mt-1">
+                        <table class="rpg-table text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="w-[28%]">Name</th>
+                                    <th class="w-[50%]">Details</th>
+                                    <th class="w-[14%]">WU</th>
+                                    <th class="w-[8%]"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="equipment-table-body"></tbody>
+                        </table>
+                    </div>
+                    <button onclick="addEquipmentRow()" class="mt-2 text-xs flex items-center gap-x-1 text-slate-500 active:text-slate-800 min-h-[36px]">
+                        <i class="fa-solid fa-plus"></i> <span>Add row</span>
+                    </button>
+                </div>
+                
+                <div class="section-box p-3 sm:p-4">
+                    <div class="section-header">Money and Wealth</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <div class="field-label">Silver</div>
+                            <input id="silver" type="number" class="form-input text-xl text-center font-semibold" placeholder="0" inputmode="numeric">
+                        </div>
+                        <div>
+                            <div class="field-label">Gold</div>
+                            <input id="gold" type="number" class="form-input text-xl text-center font-semibold" placeholder="0" inputmode="numeric">
+                        </div>
+                        <div>
+                            <div class="field-label">Other</div>
+                            <input id="other-currency" type="text" class="form-input" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB: MANEUVERS ==================== -->
+    <div id="tab-maneuvers" class="tab-content max-w-[1100px] mx-auto px-3 sm:px-4 hidden">
+        <div class="sheet-container bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-slate-300">
+            <div class="section-box p-3 sm:p-4">
+                <div class="section-header flex items-center justify-between mb-2 sm:mb-3">
+                    <span class="text-base sm:text-lg">Maneuvers</span>
+                    <button onclick="addManeuverRow()" class="text-xs px-3 py-1.5 bg-slate-100 active:bg-slate-200 rounded-full flex items-center gap-x-1 min-h-[36px]">
+                        <i class="fa-solid fa-plus"></i> <span>Add</span>
+                    </button>
+                </div>
+                <div class="table-scroll">
+                    <table class="rpg-table">
+                        <thead>
+                            <tr>
+                                <th class="w-[26%]">Maneuver</th>
+                                <th class="w-[16%]">Action</th>
+                                <th class="w-[50%]">Details</th>
+                                <th class="w-[8%]"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="maneuvers-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB: MAGIC & SPELLS ==================== -->
+    <div id="tab-spells" class="tab-content max-w-[1100px] mx-auto px-3 sm:px-4 hidden">
+        <div class="sheet-container bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-slate-300">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 mb-4 sm:mb-5">
+                <div class="lg:col-span-4 section-box p-3 sm:p-4">
+                    <div class="section-header">Magic Points</div>
+                    <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                        <div>
+                            <div class="field-label">MP Max</div>
+                            <input id="mp-max" type="number" class="form-input text-center text-2xl sm:text-3xl font-bold" placeholder="—" inputmode="numeric">
+                        </div>
+                        <div>
+                            <div class="field-label">Current MP</div>
+                            <input id="mp-current" type="number" class="form-input text-center text-2xl sm:text-3xl font-bold text-violet-700" placeholder="—" inputmode="numeric">
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="field-label">Exerts • Current</div>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <input id="exerts-current" type="number" class="form-input w-20 text-center" placeholder="0" inputmode="numeric">
+                            <div class="text-xs text-slate-500">Base +1 per 2 Insight ranks</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-8 section-box p-3 sm:p-4">
+                    <div class="section-header">Quick Spell Reference</div>
+                    <div class="text-xs text-slate-500 leading-relaxed">
+                        Spell name, Skill, Casting time, MP cost, Range, Resist, Duration, Effect, and Exert (extra effect when exerted).
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-box p-3 sm:p-4">
+                <div class="section-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <span>Spells</span>
+                    <span class="text-xs font-normal text-slate-400">Add more as needed</span>
+                </div>
+                <div id="spells-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                <button onclick="addSpellCard()" class="mt-3 w-full py-2.5 text-sm border border-dashed border-slate-300 active:bg-slate-50 rounded-2xl flex items-center justify-center gap-x-2 text-slate-500 min-h-[44px]">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add another spell</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB: ABILITIES & TRAITS ==================== -->
+    <div id="tab-abilities" class="tab-content max-w-[1100px] mx-auto px-3 sm:px-4 hidden">
+        <div class="sheet-container bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-slate-300">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+                <div class="section-box p-3 sm:p-4">
+                    <div class="section-header flex items-center justify-between">
+                        <span class="flex items-center gap-x-2">
+                            <i class="fa-solid fa-dna text-emerald-600"></i>
+                            Racial Abilities
+                        </span>
+                        <button onclick="addRacialAbility()" class="text-xs px-3 py-1.5 bg-emerald-50 active:bg-emerald-100 text-emerald-700 rounded-full flex items-center gap-x-1 min-h-[36px]">
+                            <i class="fa-solid fa-plus"></i> <span>Add</span>
+                        </button>
+                    </div>
+                    <div id="racial-abilities-list" class="space-y-3 mt-2"></div>
+                </div>
+                <div class="section-box p-3 sm:p-4">
+                    <div class="section-header flex items-center justify-between">
+                        <span class="flex items-center gap-x-2">
+                            <i class="fa-solid fa-star text-amber-600"></i>
+                            Traits
+                        </span>
+                        <button onclick="addTrait()" class="text-xs px-3 py-1.5 bg-amber-50 active:bg-amber-100 text-amber-700 rounded-full flex items-center gap-x-1 min-h-[36px]">
+                            <i class="fa-solid fa-plus"></i> <span>Add</span>
+                        </button>
+                    </div>
+                    <div id="traits-list" class="space-y-3 mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB: NOTES ==================== -->
+    <div id="tab-notes" class="tab-content max-w-[1100px] mx-auto px-3 sm:px-4 hidden">
+        <div class="sheet-container bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-slate-300">
+            <div class="section-box p-3 sm:p-4 flex flex-col min-h-[60vh]">
+                <div class="section-header">Notes</div>
+                <textarea id="notes" rows="18" class="flex-1 form-input resize-y text-sm sm:text-base" placeholder="Campaign notes, backstory, important NPCs, plot hooks, session logs..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-[1100px] mx-auto px-3 sm:px-4 mt-3 sm:mt-4 text-center text-[10px] text-slate-400 no-print pb-6">
+        Auto-saves to this browser. Works offline. Optimized for phone + desktop. • v2.16
+    </div>
+
+    <script>
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-btn-"]').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('tab-btn-' + tab).classList.add('active');
+            localStorage.setItem('lastTab', tab);
+            // Scroll tab button into view on mobile
+            const btn = document.getElementById('tab-btn-' + tab);
+            if (btn) btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+        
+        function initSkillsList() {
+            const container = document.getElementById('skills-list');
+            container.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                addSkillRow(false);
+            }
+        }
+        
+        function addSkillRow(autoFocus = true) {
+            const container = document.getElementById('skills-list');
+            const i = container.children.length;
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-12 gap-x-1.5 sm:gap-x-2 mb-1 items-center';
+            row.innerHTML = `
+                <div class="col-span-5">
+                    <input type="text" id="skill-${i}" class="form-input text-sm py-1.5" value="" placeholder="${i === 0 ? 'Skill name' : ''}" autocomplete="off">
+                </div>
+                <div class="col-span-3 flex justify-center">
+                    <input type="number" id="skill-rank-${i}" class="mini-input w-11 sm:w-12 text-center" placeholder="0" min="0" max="4" inputmode="numeric">
+                </div>
+                <div class="col-span-3 flex justify-center">
+                    <input type="number" id="skill-xp-${i}" class="mini-input w-11 sm:w-12 text-center" placeholder="0" min="0" inputmode="numeric">
+                </div>
+                <div class="col-span-1 flex justify-center">
+                    <button type="button" onclick="deleteSkillRow(this)" class="text-slate-300 hover:text-red-500 active:text-red-600 p-1 min-h-[36px] min-w-[36px] flex items-center justify-center" title="Remove skill">
+                        <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(row);
+            if (autoFocus) row.querySelector('input').focus();
+        }
+        
+        function deleteSkillRow(btn) {
+            const row = btn.closest('.grid');
+            const container = document.getElementById('skills-list');
+            row.remove();
+            Array.from(container.children).forEach((r, i) => {
+                const inputs = r.querySelectorAll('input');
+                if (inputs[0]) inputs[0].id = `skill-${i}`;
+                if (inputs[1]) inputs[1].id = `skill-rank-${i}`;
+                if (inputs[2]) inputs[2].id = `skill-xp-${i}`;
+            });
+            saveToLocalStorage();
+        }
+        
+        function initCraftsList() {
+            const container = document.getElementById('crafts-list');
+            container.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                addCraftRow(false);
+            }
+        }
+        
+        function addCraftRow(autoFocus = true) {
+            const container = document.getElementById('crafts-list');
+            const i = container.children.length;
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-12 gap-x-1.5 sm:gap-x-2 mb-1 items-center';
+            row.innerHTML = `
+                <div class="col-span-5">
+                    <input type="text" id="craft-${i}" class="form-input text-sm py-1.5" value="" placeholder="${i === 0 ? 'Craft name' : ''}" autocomplete="off">
+                </div>
+                <div class="col-span-3 flex justify-center">
+                    <input type="number" id="craft-rank-${i}" class="mini-input w-11 sm:w-12 text-center" placeholder="0" min="0" max="4" inputmode="numeric">
+                </div>
+                <div class="col-span-3 flex justify-center">
+                    <input type="number" id="craft-xp-${i}" class="mini-input w-11 sm:w-12 text-center" placeholder="0" min="0" inputmode="numeric">
+                </div>
+                <div class="col-span-1 flex justify-center">
+                    <button type="button" onclick="deleteCraftRow(this)" class="text-slate-300 hover:text-red-500 active:text-red-600 p-1 min-h-[36px] min-w-[36px] flex items-center justify-center" title="Remove craft">
+                        <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(row);
+            if (autoFocus) row.querySelector('input').focus();
+        }
+        
+        function deleteCraftRow(btn) {
+            const row = btn.closest('.grid');
+            const container = document.getElementById('crafts-list');
+            row.remove();
+            Array.from(container.children).forEach((r, i) => {
+                const inputs = r.querySelectorAll('input');
+                if (inputs[0]) inputs[0].id = `craft-${i}`;
+                if (inputs[1]) inputs[1].id = `craft-rank-${i}`;
+                if (inputs[2]) inputs[2].id = `craft-xp-${i}`;
+            });
+            saveToLocalStorage();
+        }
+        
+        function ensureCraftsList(data) {
+            const max = getMaxIndex(data, 'craft-');
+            const container = document.getElementById('crafts-list');
+            while (container.children.length <= max) {
+                addCraftRow(false);
+            }
+        }
+        
+        function initAttacksTable() {
+            const tbody = document.getElementById('attacks-table-body');
+            tbody.innerHTML = '';
+            for (let i = 0; i < 6; i++) addAttackRow(false);
+        }
+        
+        function addAttackRow(autoFocus = true) {
+            const tbody = document.getElementById('attacks-table-body');
+            const rowIndex = tbody.children.length;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" id="attack-weapon-${rowIndex}" class="rpg-input" value="" autocomplete="off"></td>
+                <td><input type="text" id="attack-attack-${rowIndex}" class="rpg-input text-center" value="" inputmode="numeric"></td>
+                <td><input type="text" id="attack-damage-${rowIndex}" class="rpg-input text-center" value=""></td>
+                <td><input type="text" id="attack-size-${rowIndex}" class="rpg-input text-center" value=""></td>
+                <td><input type="text" id="attack-traits-${rowIndex}" class="rpg-input" value="" autocomplete="off"></td>
+                <td class="text-center">
+                    <button type="button" onclick="deleteAttackRow(this)" class="text-slate-300 hover:text-red-500 active:text-red-600 p-1 min-h-[36px] min-w-[36px] inline-flex items-center justify-center" title="Remove">
+                        <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            if (autoFocus) tr.querySelector('input').focus();
+        }
+        
+        function deleteAttackRow(btn) {
+            const tr = btn.closest('tr');
+            const tbody = document.getElementById('attacks-table-body');
+            tr.remove();
+            Array.from(tbody.children).forEach((row, i) => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs[0]) inputs[0].id = `attack-weapon-${i}`;
+                if (inputs[1]) inputs[1].id = `attack-attack-${i}`;
+                if (inputs[2]) inputs[2].id = `attack-damage-${i}`;
+                if (inputs[3]) inputs[3].id = `attack-size-${i}`;
+                if (inputs[4]) inputs[4].id = `attack-traits-${i}`;
+            });
+            saveToLocalStorage();
+        }
+        
+        function initEquipmentTable() {
+            const tbody = document.getElementById('equipment-table-body');
+            tbody.innerHTML = '';
+            for (let i = 0; i < 12; i++) addEquipmentRow(false);
+        }
+        
+        function addEquipmentRow(autoFocus = true) {
+            const tbody = document.getElementById('equipment-table-body');
+            const rowIndex = tbody.children.length;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" id="equip-name-${rowIndex}" class="rpg-input" value="" autocomplete="off"></td>
+                <td><input type="text" id="equip-details-${rowIndex}" class="rpg-input" value="" autocomplete="off"></td>
+                <td><input type="number" id="equip-wu-${rowIndex}" class="rpg-input text-center" value="" inputmode="numeric"></td>
+                <td class="text-center">
+                    <button type="button" onclick="deleteEquipmentRow(this)" class="text-slate-300 hover:text-red-500 active:text-red-600 p-1 min-h-[36px] min-w-[36px] inline-flex items-center justify-center" title="Remove">
+                        <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            if (autoFocus) tr.querySelector('input').focus();
+        }
+        
+        function deleteEquipmentRow(btn) {
+            const tr = btn.closest('tr');
+            const tbody = document.getElementById('equipment-table-body');
+            tr.remove();
+            Array.from(tbody.children).forEach((row, i) => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs[0]) inputs[0].id = `equip-name-${i}`;
+                if (inputs[1]) inputs[1].id = `equip-details-${i}`;
+                if (inputs[2]) inputs[2].id = `equip-wu-${i}`;
+            });
+            saveToLocalStorage();
+        }
+        
+        function initManeuversTable() {
+            const tbody = document.getElementById('maneuvers-table-body');
+            tbody.innerHTML = '';
+            for (let i = 0; i < 12; i++) addManeuverRow(false);
+        }
+        
+        function addManeuverRow(autoFocus = true) {
+            const tbody = document.getElementById('maneuvers-table-body');
+            const rowIndex = tbody.children.length;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" id="maneuver-name-${rowIndex}" class="rpg-input" value="" autocomplete="off"></td>
+                <td><input type="text" id="maneuver-action-${rowIndex}" class="rpg-input text-center" value=""></td>
+                <td><input type="text" id="maneuver-details-${rowIndex}" class="rpg-input" value="" autocomplete="off"></td>
+                <td class="text-center">
+                    <button type="button" onclick="deleteManeuverRow(this)" class="text-slate-300 hover:text-red-500 active:text-red-600 p-1 min-h-[36px] min-w-[36px] inline-flex items-center justify-center" title="Remove">
+                        <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            if (autoFocus) tr.querySelector('input').focus();
+        }
+        
+        function deleteManeuverRow(btn) {
+            const tr = btn.closest('tr');
+            const tbody = document.getElementById('maneuvers-table-body');
+            tr.remove();
+            Array.from(tbody.children).forEach((row, i) => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs[0]) inputs[0].id = `maneuver-name-${i}`;
+                if (inputs[1]) inputs[1].id = `maneuver-action-${i}`;
+                if (inputs[2]) inputs[2].id = `maneuver-details-${i}`;
+            });
+            saveToLocalStorage();
+        }
+        
+        function initRacialAbilities() {
+            const container = document.getElementById('racial-abilities-list');
+            container.innerHTML = '';
+            for (let i = 0; i < 4; i++) addRacialAbility(false);
+        }
+        
+        function addRacialAbility(autoFocus = true) {
+            const container = document.getElementById('racial-abilities-list');
+            const i = container.children.length;
+            const div = document.createElement('div');
+            div.className = 'ability-detail-card relative';
+            div.innerHTML = `
+                <button type="button" onclick="deleteRacialAbility(this)" class="absolute top-2 right-2 text-slate-300 hover:text-red-500 active:text-red-600 p-1 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-full hover:bg-red-50" title="Remove">
+                    <i class="fa-solid fa-times text-sm"></i>
+                </button>
+                <div class="mb-1.5 pr-8">
+                    <div class="field-label text-emerald-700">Ability Name</div>
+                    <input type="text" id="racial-name-${i}" class="form-input font-semibold text-sm" value="" autocomplete="off">
+                </div>
+                <div>
+                    <div class="field-label">Details / Benefits</div>
+                    <textarea id="racial-detail-${i}" rows="3" class="form-input text-sm"></textarea>
+                </div>
+            `;
+            container.appendChild(div);
+            if (autoFocus) div.querySelector('input').focus();
+        }
+        
+        function deleteRacialAbility(btn) {
+            const card = btn.closest('.ability-detail-card');
+            const container = document.getElementById('racial-abilities-list');
+            card.remove();
+            Array.from(container.children).forEach((c, i) => {
+                const name = c.querySelector('input[id^="racial-name"]');
+                const detail = c.querySelector('textarea[id^="racial-detail"]');
+                if (name) name.id = `racial-name-${i}`;
+                if (detail) detail.id = `racial-detail-${i}`;
+            });
+            saveToLocalStorage();
+        }
+        
+        function initTraits() {
+            const container = document.getElementById('traits-list');
+            container.innerHTML = '';
+            for (let i = 0; i < 5; i++) addTrait(false);
+        }
+        
+        function addTrait(autoFocus = true) {
+            const container = document.getElementById('traits-list');
+            const i = container.children.length;
+            const div = document.createElement('div');
+            div.className = 'ability-detail-card relative';
+            div.innerHTML = `
+                <button type="button" onclick="deleteTrait(this)" class="absolute top-2 right-2 text-slate-300 hover:text-red-500 active:text-red-600 p-1 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-full hover:bg-red-50" title="Remove">
+                    <i class="fa-solid fa-times text-sm"></i>
+                </button>
+                <div class="mb-1.5 pr-8">
+                    <div class="field-label text-amber-700">Trait Name</div>
+                    <input type="text" id="trait-name-${i}" class="form-input font-semibold text-sm" value="" autocomplete="off">
+                </div>
+                <div>
+                    <div class="field-label">Effect / Description</div>
+                    <textarea id="trait-detail-${i}" rows="3" class="form-input text-sm"></textarea>
+                </div>
+            `;
+            container.appendChild(div);
+            if (autoFocus) div.querySelector('input').focus();
+        }
+        
+        function deleteTrait(btn) {
+            const card = btn.closest('.ability-detail-card');
+            const container = document.getElementById('traits-list');
+            card.remove();
+            Array.from(container.children).forEach((c, i) => {
+                const name = c.querySelector('input[id^="trait-name"]');
+                const detail = c.querySelector('textarea[id^="trait-detail"]');
+                if (name) name.id = `trait-name-${i}`;
+                if (detail) detail.id = `trait-detail-${i}`;
+            });
+            saveToLocalStorage();
+        }
+        
+        let spellCount = 0;
+        
+        function createSpellCard(index) {
+            const card = document.createElement('div');
+            card.className = 'spell-card relative';
+            card.innerHTML = `
+                <button type="button" onclick="deleteSpellCard(this)" class="absolute top-2 right-2 text-slate-300 hover:text-red-500 active:text-red-600 p-1 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-full hover:bg-red-50 z-10" title="Remove spell">
+                    <i class="fa-solid fa-times text-sm"></i>
+                </button>
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2 pr-8">
+                    <div class="flex-1">
+                        <div class="field-label text-violet-700">Spell</div>
+                        <input type="text" id="spell-name-${index}" class="form-input font-semibold" value="" autocomplete="off">
+                    </div>
+                    <div class="w-full sm:w-28">
+                        <div class="field-label">Skill</div>
+                        <input type="text" id="spell-skill-${index}" class="form-input text-sm" value="" autocomplete="off">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-1.5 text-xs mb-2">
+                    <div>
+                        <div class="field-label">Casting Time</div>
+                        <input type="text" id="spell-cast-${index}" class="form-input text-sm py-1.5" value="">
+                    </div>
+                    <div>
+                        <div class="field-label">MP Cost</div>
+                        <input type="text" id="spell-mp-${index}" class="form-input text-sm py-1.5 text-center" value="" inputmode="numeric">
+                    </div>
+                    <div>
+                        <div class="field-label">Range</div>
+                        <input type="text" id="spell-range-${index}" class="form-input text-sm py-1.5" value="">
+                    </div>
+                    <div>
+                        <div class="field-label">Resist</div>
+                        <input type="text" id="spell-resist-${index}" class="form-input text-sm py-1.5" value="">
+                    </div>
+                    <div>
+                        <div class="field-label">Duration</div>
+                        <input type="text" id="spell-duration-${index}" class="form-input text-sm py-1.5" value="">
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="field-label">Effect</div>
+                    <textarea id="spell-effect-${index}" rows="2" class="form-input text-sm"></textarea>
+                </div>
+                <div>
+                    <div class="field-label text-violet-700">Exert (additional / modified effect)</div>
+                    <textarea id="spell-exert-${index}" rows="2" class="form-input text-sm"></textarea>
+                </div>
+            `;
+            return card;
+        }
+        
+        function deleteSpellCard(btn) {
+            const card = btn.closest('.spell-card');
+            const grid = document.getElementById('spells-grid');
+            card.remove();
+            Array.from(grid.children).forEach((c, i) => {
+                const fields = [
+                    ['spell-name', 'input'],
+                    ['spell-skill', 'input'],
+                    ['spell-cast', 'input'],
+                    ['spell-mp', 'input'],
+                    ['spell-range', 'input'],
+                    ['spell-resist', 'input'],
+                    ['spell-duration', 'input'],
+                    ['spell-effect', 'textarea'],
+                    ['spell-exert', 'textarea']
+                ];
+                fields.forEach(([prefix, tag]) => {
+                    const el = c.querySelector(`${tag}[id^="${prefix}-"]`);
+                    if (el) el.id = `${prefix}-${i}`;
+                });
+            });
+            spellCount = grid.children.length;
+            saveToLocalStorage();
+        }
+        
+        function initSpellsGrid() {
+            const grid = document.getElementById('spells-grid');
+            grid.innerHTML = '';
+            spellCount = 0;
+            for (let i = 0; i < 10; i++) {
+                grid.appendChild(createSpellCard(i));
+                spellCount++;
+            }
+        }
+        
+        function addSpellCard() {
+            const grid = document.getElementById('spells-grid');
+            const card = createSpellCard(spellCount);
+            grid.appendChild(card);
+            spellCount++;
+            card.querySelector('input').focus();
+        }
+        
+        function setupAutoSave() {
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('input, textarea, select')) debouncedSave();
+            });
+            document.addEventListener('change', function(e) {
+                if (e.target.matches('input, textarea, select')) debouncedSave();
+            });
+            // Flush any pending debounced save immediately if the tab is closed/hidden
+            window.addEventListener('beforeunload', () => { clearTimeout(autoSaveTimer); saveToLocalStorage(); });
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') { clearTimeout(autoSaveTimer); saveToLocalStorage(); }
+            });
+        }
+        
+        function getMaxIndex(data, prefix) {
+            let max = -1;
+            const re = new RegExp('^' + prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\\d+)$');
+            Object.keys(data).forEach(k => {
+                const m = k.match(re);
+                if (m) max = Math.max(max, parseInt(m[1], 10));
+            });
+            return max;
+        }
+        
+        function ensureSkillRows(data) {
+            const max = getMaxIndex(data, 'skill-');
+            const container = document.getElementById('skills-list');
+            while (container.children.length <= max) {
+                addSkillRow(false);
+            }
+        }
+        
+        function ensureAttackRows(data) {
+            const max = getMaxIndex(data, 'attack-weapon-');
+            const tbody = document.getElementById('attacks-table-body');
+            while (tbody.children.length <= max) {
+                addAttackRow(false);
+            }
+        }
+        
+        function ensureEquipmentRows(data) {
+            const max = getMaxIndex(data, 'equip-name-');
+            const tbody = document.getElementById('equipment-table-body');
+            while (tbody.children.length <= max) {
+                addEquipmentRow(false);
+            }
+        }
+        
+        function ensureManeuverRows(data) {
+            const max = getMaxIndex(data, 'maneuver-name-');
+            const tbody = document.getElementById('maneuvers-table-body');
+            while (tbody.children.length <= max) {
+                addManeuverRow(false);
+            }
+        }
+        
+        function ensureRacialRows(data) {
+            const max = getMaxIndex(data, 'racial-name-');
+            const container = document.getElementById('racial-abilities-list');
+            while (container.children.length <= max) {
+                addRacialAbility(false);
+            }
+        }
+        
+        function ensureTraitRows(data) {
+            const max = getMaxIndex(data, 'trait-name-');
+            const container = document.getElementById('traits-list');
+            while (container.children.length <= max) {
+                addTrait(false);
+            }
+        }
+        
+        function ensureSpellCards(data) {
+            const max = getMaxIndex(data, 'spell-name-');
+            const grid = document.getElementById('spells-grid');
+            while (grid.children.length <= max) {
+                const card = createSpellCard(spellCount);
+                grid.appendChild(card);
+                spellCount++;
+            }
+        }
+        
+        let saveFailureWarned = false;
+        
+        function saveToLocalStorage() {
+            const data = {};
+            document.querySelectorAll('input[id], textarea[id]').forEach(el => {
+                data[el.id] = (el.type === 'checkbox') ? el.checked : el.value;
+            });
+            try {
+                localStorage.setItem('seekers_char_sheet_v2.16', JSON.stringify(data));
+            } catch (e) {
+                console.error('Autosave failed - browser storage may be full or unavailable.', e);
+                if (!saveFailureWarned) {
+                    saveFailureWarned = true;
+                    alert('Warning: could not save your character to this browser (storage full or unavailable). Export a JSON backup now to avoid losing changes.');
+                }
+            }
+        }
+        
+        // Debounced wrapper used for autosave-on-every-keystroke so a long typing burst
+        // (e.g. in Notes) doesn't re-serialize the whole sheet on every character.
+        let autoSaveTimer = null;
+        function debouncedSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(saveToLocalStorage, 300);
+        }
+        
+        function loadFromLocalStorage() {
+            let saved = localStorage.getItem('seekers_char_sheet_v2.16')
+                     || localStorage.getItem('seekers_char_sheet_v2.15')
+                     || localStorage.getItem('seekers_char_sheet_v2.14')
+                     || localStorage.getItem('seekers_char_sheet_v2.13')
+                     || localStorage.getItem('seekers_char_sheet_v2.12')
+                     || localStorage.getItem('seekers_char_sheet_v2.11');
+            if (!saved) return;
+            try {
+                const data = JSON.parse(saved);
+                // Recreate dynamic rows so previously added entries survive refresh/load
+                ensureSkillRows(data);
+                ensureCraftsList(data);
+                ensureAttackRows(data);
+                ensureEquipmentRows(data);
+                ensureManeuverRows(data);
+                ensureRacialRows(data);
+                ensureTraitRows(data);
+                ensureSpellCards(data);
+                // Populate values
+                Object.keys(data).forEach(key => {
+                    const el = document.getElementById(key);
+                    if (!el) return;
+                    if (el.type === 'checkbox') el.checked = !!data[key];
+                    else el.value = data[key] || '';
+                });
+            } catch (e) {
+                console.error('Failed to load saved character data', e);
+            }
+        }
+        
+        function saveCharacter() {
+            saveToLocalStorage();
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:right-4 sm:translate-x-0 bg-emerald-600 text-white px-5 py-2.5 rounded-2xl shadow-xl flex items-center gap-x-2 text-sm z-50';
+            toast.innerHTML = `<i class="fa-solid fa-check-double"></i> <span>Saved!</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.transition = 'opacity 0.3s'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 1600);
+        }
+        
+        function loadCharacter() {
+            const saved = localStorage.getItem('seekers_char_sheet_v2.16') || localStorage.getItem('seekers_char_sheet_v2.15') || localStorage.getItem('seekers_char_sheet_v2.14') || localStorage.getItem('seekers_char_sheet_v2.13') || localStorage.getItem('seekers_char_sheet_v2.12') || localStorage.getItem('seekers_char_sheet_v2.11');
+            if (!saved) { alert('No saved character found in this browser.'); return; }
+            loadFromLocalStorage();
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:right-4 sm:translate-x-0 bg-sky-600 text-white px-5 py-2.5 rounded-2xl shadow-xl flex items-center gap-x-2 text-sm z-50';
+            toast.innerHTML = `<i class="fa-solid fa-sync"></i> <span>Loaded!</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.transition = 'opacity 0.3s'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 1600);
+        }
+        
+        function exportJSON() {
+            saveToLocalStorage();
+            const data = localStorage.getItem('seekers_char_sheet_v2.16');
+            if (!data) { alert('No character data to export yet.'); return; }
+            const charName = document.getElementById('char-name').value || 'character';
+            const filename = `${charName.toLowerCase().replace(/\s+/g, '-')}-sheet.json`;
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function importJSON() {
+            const input = document.createElement('input');
+            input.type = 'file'; input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    try {
+                        const importedData = JSON.parse(ev.target.result);
+                        localStorage.setItem('seekers_char_sheet_v2.16', JSON.stringify(importedData));
+                        loadFromLocalStorage();
+                        alert('Character imported successfully!');
+                    } catch (err) {
+                        alert('Invalid JSON file. Could not import.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+        
+        function resetCharacter() {
+            if (!confirm('Reset all fields? This will clear the current character data.')) return;
+            localStorage.removeItem('seekers_char_sheet_v2.16');
+            localStorage.removeItem('seekers_char_sheet_v2.15');
+            localStorage.removeItem('seekers_char_sheet_v2.14');
+            localStorage.removeItem('seekers_char_sheet_v2.13');
+            localStorage.removeItem('seekers_char_sheet_v2.12');
+            localStorage.removeItem('seekers_char_sheet_v2.11');
+            document.querySelectorAll('input, textarea').forEach(el => {
+                if (el.type === 'checkbox') el.checked = false;
+                else el.value = '';
+            });
+            initSkillsList();
+            initCraftsList();
+            initAttacksTable();
+            initEquipmentTable();
+            initManeuversTable();
+            initRacialAbilities();
+            initTraits();
+            initSpellsGrid();
+            alert('Character sheet has been reset.');
+        }
+        
+        function initializeCharacterSheet() {
+            initSkillsList();
+            initCraftsList();
+            initAttacksTable();
+            initEquipmentTable();
+            initManeuversTable();
+            initRacialAbilities();
+            initTraits();
+            initSpellsGrid();
+            setupAutoSave();
+            loadFromLocalStorage();
+            const lastTab = localStorage.getItem('lastTab') || 'main';
+            if (document.getElementById('tab-' + lastTab)) showTab(lastTab);
+            else showTab('main');
+            
+            document.addEventListener('keydown', function(e) {
+                if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                    e.preventDefault();
+                    saveToLocalStorage();
+                    const toast = document.createElement('div');
+                    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#166534;color:white;padding:8px 16px;border-radius:9999px;font-size:13px;z-index:50';
+                    toast.textContent = 'Saved ✓';
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 1200);
+                }
+            });
+            
+            console.log('%c[SeekerSheet] v2.16 mobile-optimized initialized (crafts add/delete, debounced autosave).', 'color:#64748b');
+        }
+        
+        window.onload = initializeCharacterSheet;
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .catch(err => console.error('Service worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
